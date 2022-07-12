@@ -10,7 +10,13 @@ const Login = () => {
   const [isTyping, setIsTyping] = useState(false);
   const [spotifyToken, setSpotifyToken] = useState("");
   const [topArtists, setTopArtists] = useState([]);
-  const [topTracks, setTopTracks] = useState([]);
+  const [topTracksMedium, setTopTracksMedium] = useState([]);
+  const [topTracksShort, setTopTracksShort] = useState([]);
+  const [topTracksLong, setTopTracksLong] = useState([]);
+
+  const years_short = {};
+  const years_medium = {};
+  const years_long = {};
 
   useEffect(() => {
     const _spotifyToken = getTokenFromUrl().access_token;
@@ -30,8 +36,20 @@ const Login = () => {
       });
       spotify.getMyTopTracks({ limit: 50 }).then((tracks) => {
         console.log("tracks: ", tracks);
-        setTopTracks(tracks.items);
+        setTopTracksMedium(tracks.items);
       });
+      spotify
+        .getMyTopTracks({ limit: 50, time_range: "short_term" })
+        .then((tracks) => {
+          console.log("tracks: ", tracks);
+          setTopTracksShort(tracks.items);
+        });
+      spotify
+        .getMyTopTracks({ limit: 50, time_range: "long_term" })
+        .then((tracks) => {
+          console.log("tracks: ", tracks);
+          setTopTracksLong(tracks.items);
+        });
     }
     if (isTyping) {
       return;
@@ -44,17 +62,43 @@ const Login = () => {
     return topArtists.map((artist, i) => {
       return (
         <div key={artist.id}>
-          <img src={artist.images[0].url} alt={artist.name} />
+          <img src={artist.images[2].url} alt={artist.name} />
           <p>{i + 1 + ". " + artist.name}</p>
         </div>
       );
     });
   }
 
+  function ProcessTrackDates(topTracks, years) {
+    for (let i = 0; i < topTracks.length; i++) {
+      if (
+        years[topTracks[i].album.release_date.substring(0, 4)] === undefined
+      ) {
+        years[topTracks[i].album.release_date.substring(0, 4)] = 1;
+      } else {
+        years[topTracks[i].album.release_date.substring(0, 4)]++;
+      }
+    }
+  }
+
+  function ProcessAllTrackDates(
+    topTracksMedium,
+    topTracksShort,
+    topTracksLong
+  ) {
+    ProcessTrackDates(topTracksMedium, years_medium);
+    ProcessTrackDates(topTracksShort, years_short);
+    ProcessTrackDates(topTracksLong, years_long);
+    console.log("short: ", years_short);
+    console.log("medium: ", years_medium);
+    console.log("long: ", years_long);
+  }
+
   function DisplayTopTrackDates(topTracks) {
     return topTracks.map((track, i) => {
       return (
         <div key={track.id}>
+          <img src={track.album.images[2].url} alt={track.album.name} />
           <p>{i + 1 + ". " + track.name}</p>
           <p>{track.album.release_date}</p>
         </div>
@@ -104,7 +148,8 @@ const Login = () => {
         <div>{welcomeMessage}</div>
         <a href={loginUrl}>Login with Spotify</a>
         {DisplayTopArtists(topArtists)}
-        {DisplayTopTrackDates(topTracks)}
+        {DisplayTopTrackDates(topTracksMedium)}
+        {ProcessAllTrackDates(topTracksMedium, topTracksShort, topTracksLong)}
       </div>
     </div>
   );
