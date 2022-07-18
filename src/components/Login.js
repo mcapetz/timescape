@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { loginUrl, getTokenFromUrl } from "./SpotifyAuth";
 import SpotifyWebApi from "spotify-web-api-js";
+import BarChart from "./BarChart";
 
 const spotify = new SpotifyWebApi();
 
@@ -110,9 +111,11 @@ const Login = () => {
     ProcessTrackDates(topTracksMedium, years_medium);
     ProcessTrackDates(topTracksShort, years_short);
     ProcessTrackDates(topTracksLong, years_long);
-    // console.log("short: ", years_short);
-    // console.log("medium: ", years_medium);
-    // console.log("long: ", years_long);
+    console.log("short: ", years_short);
+    console.log("medium: ", years_medium);
+    console.log("long: ", years_long);
+    let array_short = Object.values(years_short);
+    console.log("short arr: ", array_short);
   }
 
   function DisplayTopTrackDates(topTracks) {
@@ -125,6 +128,46 @@ const Login = () => {
         </div>
       );
     });
+  }
+
+  function DisplayTopGrid(topTracks) {
+    return topTracks.map((track, i) => {
+      return (
+        <div>
+          <div key={track.id}>
+            <img src={track.album.images[2].url} alt={track.album.name} />
+          </div>
+        </div>
+      );
+    });
+  }
+
+  function TopGrid(period) {
+    if (period === "medium") {
+      return (
+        <div className="flex flex-col gap-10 pb-10">
+          <div className="grid grid-cols-10">
+            {DisplayTopGrid(topTracksMedium)}
+          </div>
+        </div>
+      );
+    } else if (period === "short") {
+      return (
+        <div className="flex flex-col gap-10 pb-10">
+          <div className="grid grid-cols-10">
+            {DisplayTopGrid(topTracksShort)}
+          </div>
+        </div>
+      );
+    } else if (period === "long") {
+      return (
+        <div className="flex flex-col gap-10 pb-10">
+          <div className="grid grid-cols-10">
+            {DisplayTopGrid(topTracksLong)}
+          </div>
+        </div>
+      );
+    }
   }
 
   const loadMessage = (username) => {
@@ -203,16 +246,60 @@ const Login = () => {
     return `${sum} tracks extended but really not `;
   };
 
+  // ProcessAllTrackDates(topTracksMedium, topTracksShort, topTracksLong);
+  // ProcessExtendedTracks(playlists);
+  const [userData, setUserData] = useState([]);
+  // if (years_short.length !== 0) {
+  //   setUserData({
+  //     labels: years_short.map((year) => year),
+  //     datasets: [
+  //       {
+  //         label: "Short Term",
+  //         backgroundColor: "rgba(255,99,132,0.2)",
+  //         borderColor: "rgba(255,99,132,1)",
+  //         borderWidth: 1,
+  //         hoverBackgroundColor: "rgba(255,99,132,0.4)",
+  //         hoverBorderColor: "rgba(255,99,132,1)",
+  //         data: years_short.map((year) => year),
+  //       },
+  //     ],
+  //   });
+  // }
+
+  const [period, setPeriod] = useState("short");
+
+  useEffect(() => {}, [period]);
+
   return (
     <div className="flex justify-center">
       <div className="flex flex-col gap-10 w-1/2 pt-10">
         <div>{welcomeMessage}</div>
         <a href={loginUrl}>Login with Spotify</a>
-        {ProcessExtendedTracks(playlists)}
-        {DisplayTopArtists(topArtists)}
-        {DisplayTopTrackDates(topTracksMedium)}
+        {/* <div className="flex flex-box justify-between">
+          <button
+            className="bg-yellow-300 w-fit p-2 rounded-lg border-purple-500 border-4"
+            onClick={() => setPeriod("short")}
+          >
+            Short Term
+          </button>
+          <button
+            className="bg-yellow-300 w-fit p-2 rounded-lg border-purple-500 border-4"
+            onClick={() => setPeriod("medium")}
+          >
+            Medium Term
+          </button>
+          <button
+            className="bg-yellow-300 w-fit p-2 rounded-lg border-purple-500 border-4"
+            onClick={() => setPeriod("long")}
+          >
+            Long Term
+          </button>
+        </div>
+        <TopGrid /> */}
+
         {ProcessAllTrackDates(topTracksMedium, topTracksShort, topTracksLong)}
       </div>
+      <div>{/* <BarChart chartData={userData} /> */}</div>
     </div>
   );
 };
